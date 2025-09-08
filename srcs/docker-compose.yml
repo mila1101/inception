@@ -1,11 +1,21 @@
-version: '3.8'
+
+volumes:
+  web: {}
 
 services:
   nginx:
     build: requirements/nginx/.
     container_name: nginx
-    ports:
-      - "80:80"
+    restart: always
+    depends_on: [wordpress]
+    ports: ["80:80"]
+    volumes:
+      - web:/var/www/html:ro
   wordpress:
     build: requirements/wordpress/.
     container_name: wp-php
+    restart: always
+    expose: ["9000"]
+    volumes:
+      - web:/var/www/html
+
