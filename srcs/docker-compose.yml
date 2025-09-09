@@ -1,21 +1,43 @@
-
 volumes:
   web: {}
+  db: {}
 
 services:
   nginx:
-    build: requirements/nginx/.
+    build: requirements/nginx
     container_name: nginx
     restart: always
-    depends_on: [wordpress]
-    ports: ["80:80"]
+    ports:
+      - "80:80"
     volumes:
       - web:/var/www/html:ro
+    depends_on:
+      - wordpress
+
   wordpress:
-    build: requirements/wordpress/.
+    build: requirements/wordpress
     container_name: wp-php
     restart: always
-    expose: ["9000"]
+    expose:
+      - "9000"
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_pass
     volumes:
       - web:/var/www/html
+    depends_on:
+      - mariadb
+  mariadb:
+    build: requirements/mariadb
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_pass
+    volumes:
+      - db:/var/lib/mysql
 
