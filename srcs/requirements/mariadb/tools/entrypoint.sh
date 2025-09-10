@@ -1,33 +1,36 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-: "${DB_NAME:?missing}"; : "${DB_USER:?missing}"
-: "${MYSQL_ROOT_PASSWORD_FILE:?missing}"; : "${MYSQL_PASSWORD_FILE:?missing}"
+DB_DIR="/var/lib/mysql"
 
 DB_ROOT_PASSWORD=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
 DB_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
 
-if [ ! -d /var/lib/mysql/mysql ]; then
-install -o mysql -g mysql -d /run/mysqld /var/lib/mysql
-mariadb-install-db --user=mysql --datadir=/var/lib/mysql >/dev/null
-
-mysqld --skip-networking --socket=/run/mysqld/mysqld.sock --datadir=/var/lib/mysql --user=mysql &
-pid=$!
-for i in {1..40}; do
-	mariadb-admin --socket=/run/mysqld/mysqld.sock ping >/dev/null 2>&1 && break
-	sleep 1
-done
-
-mariadb --socket=/run/mysqld/mysqld.sock <<SQL
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
-CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
-GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
-FLUSH PRIVILEGES;
-SQL
-
-mariadb-admin --socket=/run/mysqld/mysqld.sock shutdown
-wait $pid
+if [ ! -d "$DB_DIR/mysql" ]; then
+	echo "Initializing MariaDB data directory..."
+	mariadb-install-db --user=mysql --basedir=/usr --datadir="$DB_DIR"
 fi
 
-exec mysqld --user=mysql --datadir=/var/lib/mysql --bind-address=0.0.0.0
+sed -i "s|bind-address\s*=\s*127.0.0.1|bind-address = 0.0.0.0|g" /etc/mysql/mariadb.conf.d/50-server.cnf
+
+echo "Starting MariaDB..."
+mysqld_safe --datadir="$DB_DIR" &
+sleep 5
+
+echo "Configuring MariaDB..."
+
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';"
+
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;"
+
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';"
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'wp-php.srcs_inception' IDENTIFIED BY '${DB_PASSWORD}';"
+
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';"
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';"
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'wp-php.srcs_inception';"
+
+mysql -u root -p"${DB_ROOT_PASSWORD}" -e "FLUSH PRIVILEGES;"
+
+echo "MariaDB configuration complete!"
+wait
