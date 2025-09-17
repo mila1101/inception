@@ -4,7 +4,6 @@ DC = docker compose -f srcs/docker-compose.yml
 all: up
 
 up:
-	@mkdir -p /home/$(USER)/data/wp /home/$(USER)/data/db
 	$(DC) up -d --build
 
 down:
