@@ -1,5 +1,5 @@
 NAME = inception
-DC = docker-compose -f srcs/docker-compose.yml
+DC = cd srcs && docker-compose -f docker-compose.yml
 
 all: up
 
