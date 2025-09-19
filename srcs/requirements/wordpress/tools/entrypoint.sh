@@ -49,6 +49,19 @@ if [ ! -f /var/www/html/wp-config.php ]; then
 		--user_pass="$USER_PASS" \
 		--role=editor \
 		--path=/var/www/html
+
+	echo "(^‿^) configuring WordPress for multiple URLs..."
+	cat >> /var/www/html/wp-config.php << 'EOF'
+
+// Handle multiple URLs for development
+if (isset($_SERVER['HTTP_HOST'])) {
+	$host = $_SERVER['HTTP_HOST'];
+	if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+		define('WP_HOME', 'https://' . $host);
+		define('WP_SITEURL', 'https://' . $host);
+	}
+}
+EOF
 fi
 
 chown -R www-data:www-data /var/www/html
