@@ -56,7 +56,7 @@ if [ ! -f /var/www/html/wp-config.php ]; then
 // Handle multiple URLs for development
 if (isset($_SERVER['HTTP_HOST'])) {
 	$host = $_SERVER['HTTP_HOST'];
-	if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+	if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false || strpos($host, '10.0.2.15') !== false) {
 		define('WP_HOME', 'https://' . $host);
 		define('WP_SITEURL', 'https://' . $host);
 	}
