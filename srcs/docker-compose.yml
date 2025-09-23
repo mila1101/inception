@@ -1,5 +1,3 @@
-version: '3.3'
-
 services:
   mariadb:
     container_name: mariadb
@@ -53,7 +51,7 @@ services:
     extra_hosts:
       - "msoklova.42.fr:127.0.0.1"
     volumes:
-      - wordpress_files:/var/www/html:ro
+      - wordpress_files:/var/www/html
     networks:
       - inception
     restart: always
