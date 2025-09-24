@@ -64,6 +64,9 @@ if (isset($_SERVER['HTTP_HOST'])) {
 EOF
 fi
 
+echo "(^‿^) setting proper permissions..."
 chown -R www-data:www-data /var/www/html
+chmod -R 755 /var/www/html
 
-exec /usr/sbin/php-fpm7.4 -F
+echo "(^‿^) starting PHP-FPM..."
+exec /usr/sbin/php-fpm8.2 -F
