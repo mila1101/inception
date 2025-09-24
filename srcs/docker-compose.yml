@@ -9,6 +9,8 @@ services:
     environment:
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
     volumes:
       - wordpress_db:/var/lib/mysql
     networks:
@@ -25,8 +27,6 @@ services:
       context: ./requirements/wordpress
     env_file:
       - .env
-    environment:
-      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
     expose:
       - "9000"
     volumes:
