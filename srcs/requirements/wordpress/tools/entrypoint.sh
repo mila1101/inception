@@ -9,7 +9,7 @@ DB_NAME=${WORDPRESS_DB_NAME}
 DB_USER=${WORDPRESS_DB_USER}
 DB_HOST=${WORDPRESS_DB_HOST}
 WP_TITLE=${WP_TITLE:-INCEPTION}
-WP_URL=${WP_URL:-https://localhost}
+WP_URL=${WP_URL:-https://msoklova.42.fr}
 WP_ADMIN_USER=${WP_ADMIN_USER:-msoklova}
 WP_ADMIN_EMAIL=${WP_ADMIN_EMAIL:-admin@example.com}
 WP_USER=${WP_USER:-editor_user}
@@ -50,18 +50,9 @@ if [ ! -f /var/www/html/wp-config.php ]; then
 		--role=editor \
 		--path=/var/www/html
 
-	echo "(^‿^) configuring WordPress for multiple URLs..."
-	cat >> /var/www/html/wp-config.php << 'EOF'
-
-// Handle multiple URLs for development
-if (isset($_SERVER['HTTP_HOST'])) {
-	$host = $_SERVER['HTTP_HOST'];
-	if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false || strpos($host, '10.0.2.15') !== false) {
-		define('WP_HOME', 'https://' . $host);
-		define('WP_SITEURL', 'https://' . $host);
-	}
-}
-EOF
+	echo "(^‿^) setting WordPress URL to domain only..."
+	wp option update --allow-root home "$WP_URL" --path=/var/www/html
+	wp option update --allow-root siteurl "$WP_URL" --path=/var/www/html
 fi
 
 echo "(^‿^) setting proper permissions..."

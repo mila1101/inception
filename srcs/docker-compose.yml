@@ -48,8 +48,6 @@ services:
       context: ./requirements/nginx
     ports:
       - "443:443"
-    extra_hosts:
-      - "msoklova.42.fr:127.0.0.1"
     volumes:
       - wordpress_files:/var/www/html
     networks:
